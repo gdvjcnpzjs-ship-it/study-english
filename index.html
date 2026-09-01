@@ -320,18 +320,15 @@
   </div>
 
   <script>
-    // iOS用 PNGアイコン動的生成処理
     function generateAppleIcon() {
       const canvas = document.createElement('canvas');
       canvas.width = 180;
       canvas.height = 180;
       const ctx = canvas.getContext('2d');
 
-      // ミントグリーン背景
       ctx.fillStyle = '#a8e6cf';
       ctx.fillRect(0, 0, 180, 180);
 
-      // 白い紙飛行機描画
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 10;
       ctx.lineCap = 'round';
@@ -350,17 +347,27 @@
       ctx.lineTo(140.4, 39.6);
       ctx.stroke();
 
-      // PNG データURIとしてapple-touch-iconにセット
       document.getElementById('apple-icon').href = canvas.toDataURL('image/png');
     }
 
     generateAppleIcon();
 
     let phrases = JSON.parse(localStorage.getItem('my_phrases')) || [];
+    let remainingPhrases = []; 
     let current = "";
     let autoTimer = null;
     let isAutoPlaying = false;
     const DAILY_GOAL = 3;
+
+    // Fisher-Yates アルゴリズムによるシャッフル
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
 
     function saveSettings() {
       const repeatVal = document.getElementById('repeatCount').value;
@@ -483,23 +490,27 @@
       speakPhraseRepeat(current, repeats);
     }
 
+    // 一巡シャッフル表示処理
     function nextPhrase(shouldSpeak = false) {
       if (phrases.length === 0) {
         document.getElementById('display').innerText = "No Data Found";
         current = "";
+        remainingPhrases = [];
         return;
       }
       
-      if (phrases.length === 1) {
-        current = phrases[0];
-      } else {
-        let nextIndex;
-        do {
-          nextIndex = Math.floor(Math.random() * phrases.length);
-        } while (phrases[nextIndex] === current);
-        current = phrases[nextIndex];
+      // 未表示フレーズが無くなったら、全体をシャッフルしてキューをリセット
+      if (remainingPhrases.length === 0) {
+        remainingPhrases = shuffleArray(phrases);
+
+        // 新しい一巡の最初が、前回の一巡の最後と同じフレーズになった場合の調整
+        if (remainingPhrases.length > 1 && remainingPhrases[remainingPhrases.length - 1] === current) {
+          const duplicate = remainingPhrases.pop();
+          remainingPhrases.unshift(duplicate);
+        }
       }
-      
+
+      current = remainingPhrases.pop();
       document.getElementById('display').innerText = current;
 
       if (shouldSpeak) {
@@ -556,18 +567,27 @@
         save();
         updateGoalMeter(1);
         input.value = '';
+        
+        // 新しいフレーズを未表示の山にも追加
+        remainingPhrases.unshift(text);
+
         if (!current) nextPhrase(false);
       }
     }
 
     function deletePhrase(index) {
       if (confirm("Delete Data?")) {
+        const deletedText = phrases[index];
         phrases.splice(index, 1);
+        
+        // 未表示の山からも削除されたフレーズをクリア
+        remainingPhrases = remainingPhrases.filter(item => item !== deletedText);
+        
         save();
         if (phrases.length === 0) {
           current = "";
           document.getElementById('display').innerText = "No Data Found";
-        } else if (current === phrases[index]) {
+        } else if (current === deletedText) {
           nextPhrase(false);
         }
       }
@@ -601,6 +621,7 @@
           if (Array.isArray(importedPhrases)) {
             phrases = [...new Set([...phrases, ...importedPhrases])];
             save();
+            remainingPhrases = shuffleArray(phrases);
             alert("Import Successful");
             if (!current) nextPhrase(false);
           } else {
