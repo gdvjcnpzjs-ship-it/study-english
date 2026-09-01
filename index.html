@@ -86,6 +86,39 @@
       text-shadow: 0 0 5px #fff;
     }
 
+    /* Settings Panel */
+    .settings-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+      font-size: 0.85rem;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+    }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .setting-row label {
+      font-weight: bold;
+    }
+    .settings-panel input[type="number"] {
+      background: #000;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      font-family: var(--font-mono);
+      padding: 4px 8px;
+    }
+    .settings-panel input[type="range"] {
+      accent-color: var(--text-color);
+    }
+
     /* Display Card */
     .card { 
       background: var(--card-bg); 
@@ -228,12 +261,25 @@
     <div id="clearedMsg" class="cleared-msg">UPLOAD COMPLETE. SYSTEM READY.</div>
   </div>
 
+  <!-- Config Panel -->
+  <div class="settings-panel">
+    <div class="setting-row">
+      <label for="repeatCount">REPEAT COUNT:</label>
+      <input type="number" id="repeatCount" value="3" min="1" max="10" style="width: 50px;" onchange="saveSettings()">
+    </div>
+    <div class="setting-row">
+      <label for="speechRate">SPEED (<span id="rateVal">1.0x</span>):</label>
+      <input type="range" id="speechRate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel()" onchange="saveSettings()">
+    </div>
+  </div>
+
   <div class="card">
     <div id="display" class="phrase">NO DATA FOUND</div>
   </div>
 
   <div class="btn-group">
     <button onclick="nextPhrase(false)">NEXT</button>
+    <button onclick="playCurrentSingle()">PLAY</button>
     <button onclick="copyPhrase()">COPY</button>
     <button id="autoBtn" onclick="toggleAutoPlay()">AUTO PLAY</button>
   </div>
@@ -263,6 +309,31 @@
     let autoTimer = null;
     let isAutoPlaying = false;
     const DAILY_GOAL = 3;
+
+    function saveSettings() {
+      const repeatVal = document.getElementById('repeatCount').value;
+      const rateVal = document.getElementById('speechRate').value;
+      localStorage.setItem('setting_repeat_count', repeatVal);
+      localStorage.setItem('setting_speech_rate', rateVal);
+    }
+
+    function loadSettings() {
+      const savedRepeat = localStorage.getItem('setting_repeat_count');
+      const savedRate = localStorage.getItem('setting_speech_rate');
+
+      if (savedRepeat !== null) {
+        document.getElementById('repeatCount').value = savedRepeat;
+      }
+      if (savedRate !== null) {
+        document.getElementById('speechRate').value = savedRate;
+      }
+      updateRateLabel();
+    }
+
+    function updateRateLabel() {
+      const val = document.getElementById('speechRate').value;
+      document.getElementById('rateVal').innerText = val + 'x';
+    }
 
     function save() {
       localStorage.setItem('my_phrases', JSON.stringify(phrases));
@@ -322,6 +393,50 @@
       });
     }
 
+    /* Core Sequential Speech Function */
+    function speakPhraseRepeat(text, repeatCount, onComplete) {
+      let count = 0;
+      const rate = parseFloat(document.getElementById('speechRate').value) || 1.0;
+
+      function playOnce() {
+        if (count >= repeatCount) {
+          if (onComplete) onComplete();
+          return;
+        }
+
+        const uttr = new SpeechSynthesisUtterance(text);
+        uttr.lang = 'en-US';
+        uttr.rate = rate;
+
+        uttr.onend = function() {
+          count++;
+          if (count < repeatCount) {
+            // リピート間のインターバル（1.2秒の間隔）
+            setTimeout(playOnce, 1200);
+          } else if (onComplete) {
+            onComplete();
+          }
+        };
+
+        uttr.onerror = function() {
+          if (onComplete) onComplete();
+        };
+
+        speechSynthesis.speak(uttr);
+      }
+
+      playOnce();
+    }
+
+    function playCurrentSingle() {
+      if (!current) return;
+      speechSynthesis.cancel();
+      if (isAutoPlaying) toggleAutoPlay();
+
+      const repeats = parseInt(document.getElementById('repeatCount').value, 10) || 3;
+      speakPhraseRepeat(current, repeats);
+    }
+
     function nextPhrase(shouldSpeak = false) {
       if (phrases.length === 0) {
         document.getElementById('display').innerText = "NO DATA FOUND";
@@ -341,19 +456,15 @@
       if (!current || !isAutoPlaying) return;
 
       speechSynthesis.cancel();
-      const uttr = new SpeechSynthesisUtterance(current);
-      uttr.lang = 'en-US';
-      uttr.rate = 0.9;
+      const repeats = parseInt(document.getElementById('repeatCount').value, 10) || 3;
 
-      uttr.onend = function() {
+      speakPhraseRepeat(current, repeats, () => {
         if (!isAutoPlaying) return;
         autoTimer = setTimeout(() => {
           nextPhrase(false);
           speakAndNext();
-        }, 2000);
-      };
-
-      speechSynthesis.speak(uttr);
+        }, 1500);
+      });
     }
 
     function toggleAutoPlay() {
@@ -448,6 +559,8 @@
       reader.readAsText(file);
     }
 
+    // Initialize
+    loadSettings();
     updateGoalMeter(0);
     updateListUI();
     nextPhrase(false);
