@@ -3,101 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phrase Randomizer - Matrix Edition</title>
+  <title>Phrase Randomizer</title>
+  
+  <!-- Google Fonts: 筆記体 (Dancing Script) / 可読用 (Poppins) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- iPhone Web Clip Icon (薄いグリーンの飛行機マーク) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23a8e6cf'/><path d='M22 48 L78 22 L52 78 L42 56 Z M42 56 L78 22' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
   <style>
-    /* Matrix Theme Styles */
     :root {
-      --bg-color: #000000;
-      --text-color: #00ff41;
-      --accent-color: #008f11;
-      --border-color: #008f11;
-      --card-bg: rgba(0, 20, 0, 0.8);
-      --btn-bg: #003b00;
-      --btn-hover: #005a00;
-      --font-mono: 'Courier New', Courier, monospace;
+      --bg-color: #f0f7f4;
+      --card-bg: #ffffff;
+      --text-main: #2d4030;
+      --accent-green: #52b788;
+      --accent-hover: #40916c;
+      --light-green: #e8f5e9;
+      --border-color: #b7e4c7;
+      --font-cursive: 'Dancing Script', cursive;
+      --font-sans: 'Poppins', sans-serif;
     }
 
     body { 
-      font-family: var(--font-mono); 
+      font-family: var(--font-sans); 
       max-width: 600px; 
-      margin: 40px auto; 
+      margin: 30px auto; 
       padding: 20px; 
       text-align: center; 
       background: var(--bg-color); 
-      color: var(--text-color); 
-      position: relative;
-    }
-
-    /* Scanline effect */
-    body::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-      z-index: 2;
-      background-size: 100% 2px, 3px 100%;
-      pointer-events: none;
+      color: var(--text-main); 
     }
 
     h2 {
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      text-shadow: 0 0 5px var(--text-color);
+      font-family: var(--font-cursive);
+      font-size: 2.5rem;
+      color: var(--accent-hover);
+      margin-bottom: 20px;
     }
 
     /* Goal Meter */
     .goal-container { 
       background: var(--card-bg); 
       padding: 15px; 
+      border-radius: 12px;
       border: 1px solid var(--border-color);
       margin-bottom: 20px; 
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+      box-shadow: 0 4px 12px rgba(82, 183, 136, 0.1);
     }
     .goal-header { 
       display: flex; 
       justify-content: space-between; 
-      font-size: 0.9rem; 
+      font-family: var(--font-cursive);
+      font-size: 1.4rem; 
       font-weight: bold; 
       margin-bottom: 8px; 
     }
     .progress-bar-bg { 
-      background: #001a00; 
-      height: 10px; 
-      border: 1px solid var(--border-color);
+      background: var(--light-green); 
+      height: 12px; 
+      border-radius: 6px;
       overflow: hidden; 
     }
     .progress-bar-fill { 
-      background: var(--text-color); 
+      background: var(--accent-green); 
       height: 100%; 
       width: 0%; 
       transition: width 0.3s ease;
-      box-shadow: 0 0 10px var(--text-color);
     }
     .cleared-msg { 
-      font-size: 0.8rem; 
-      color: #fff; 
-      font-weight: bold; 
+      font-family: var(--font-cursive);
+      font-size: 1.2rem; 
+      color: var(--accent-hover); 
       margin-top: 6px; 
       display: none;
-      text-shadow: 0 0 5px #fff;
     }
 
-    /* Settings Panel */
+    /* Config Panel */
     .settings-panel {
       background: var(--card-bg);
+      border-radius: 12px;
       border: 1px solid var(--border-color);
-      padding: 15px;
+      padding: 15px 20px;
       margin-bottom: 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
       text-align: left;
-      font-size: 0.85rem;
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+      box-shadow: 0 4px 12px rgba(82, 183, 136, 0.1);
     }
     .setting-row {
       display: flex;
@@ -106,22 +100,26 @@
       gap: 10px;
     }
     .setting-row label {
+      font-family: var(--font-cursive);
+      font-size: 1.3rem;
       font-weight: bold;
     }
     .settings-panel input[type="number"] {
-      background: #000;
-      color: var(--text-color);
+      background: var(--light-green);
+      color: var(--text-main);
       border: 1px solid var(--border-color);
-      font-family: var(--font-mono);
+      border-radius: 6px;
       padding: 4px 8px;
+      font-family: var(--font-sans);
     }
     .settings-panel input[type="range"] {
-      accent-color: var(--text-color);
+      accent-color: var(--accent-green);
     }
 
     /* Display Card */
     .card { 
       background: var(--card-bg); 
+      border-radius: 12px;
       border: 1px solid var(--border-color); 
       padding: 30px; 
       margin-bottom: 20px; 
@@ -129,14 +127,14 @@
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      position: relative;
-      box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+      box-shadow: 0 4px 12px rgba(82, 183, 136, 0.1);
     }
     .phrase { 
-      font-size: 1.5rem; 
-      font-weight: bold; 
+      font-family: var(--font-sans);
+      font-size: 1.4rem; 
+      font-weight: 600; 
+      color: var(--text-main);
       word-break: break-word; 
-      text-shadow: 0 0 8px var(--text-color);
     }
 
     /* Buttons */
@@ -148,25 +146,24 @@
       margin-bottom: 20px; 
     }
     button { 
-      padding: 10px 16px; 
-      border: 1px solid var(--border-color);
-      background: var(--btn-bg); 
-      color: var(--text-color); 
-      font-family: var(--font-mono);
-      font-size: 0.9rem; 
-      text-transform: uppercase;
+      padding: 8px 18px; 
+      border: none;
+      border-radius: 20px;
+      background: var(--accent-green); 
+      color: #ffffff; 
+      font-family: var(--font-cursive);
+      font-size: 1.3rem; 
       cursor: pointer; 
-      transition: all 0.2s;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
     button:hover { 
-      background: var(--btn-hover);
-      box-shadow: 0 0 8px var(--text-color);
+      background: var(--accent-hover);
+      transform: translateY(-1px);
     }
     button.active { 
-      background: #ff003c; 
+      background: #e63946; 
       color: #fff;
-      border-color: #ff003c;
-      box-shadow: 0 0 8px #ff003c;
     }
 
     /* Inputs */
@@ -177,21 +174,22 @@
     }
     input[type="text"] { 
       flex-grow: 1;
-      padding: 10px; 
-      background: #000;
-      color: var(--text-color);
+      padding: 12px; 
+      background: #ffffff;
+      color: var(--text-main);
       border: 1px solid var(--border-color); 
-      font-family: var(--font-mono);
+      border-radius: 8px;
+      font-family: var(--font-sans);
       font-size: 1rem; 
     }
     input[type="text"]:focus {
       outline: none;
-      box-shadow: 0 0 8px var(--text-color);
+      border-color: var(--accent-green);
     }
     
     /* List & Data Management */
     .management-section {
-      margin-top: 40px;
+      margin-top: 30px;
       border-top: 1px dashed var(--border-color);
       padding-top: 20px;
       text-align: left;
@@ -201,100 +199,103 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+      font-family: var(--font-cursive);
+      font-size: 1.4rem;
+      font-weight: bold;
     }
     .data-btns {
       display: flex;
       gap: 5px;
     }
     .data-btns button {
-      padding: 5px 10px;
-      font-size: 0.8rem;
+      padding: 4px 12px;
+      font-size: 1.1rem;
     }
     .phrase-list {
       max-height: 200px;
       overflow-y: auto;
-      border: 1px solid #003b00;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       padding: 10px;
-      background: rgba(0,20,0,0.5);
+      background: #ffffff;
     }
     .list-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid #002200;
-      font-size: 0.9rem;
+      border-bottom: 1px solid var(--light-green);
+      font-size: 0.95rem;
+      font-family: var(--font-sans);
     }
     .list-item:last-child {
       border-bottom: none;
     }
     .delete-btn {
-      background: transparent;
-      border: 1px solid #ff003c;
-      color: #ff003c;
-      padding: 2px 8px;
-      font-size: 0.7rem;
+      background: #e63946;
+      color: #fff;
+      padding: 2px 10px;
+      font-size: 1rem;
+      border-radius: 12px;
     }
     .delete-btn:hover {
-      background: #4a0011;
-      box-shadow: 0 0 5px #ff003c;
+      background: #c1121f;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #001a00; }
-    ::-webkit-scrollbar-thumb { background: var(--border-color); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--light-green); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
   </style>
 </head>
 <body>
 
-  <h2>SYSTEM.PHRASE_RANDOMIZER</h2>
+  <h2>Phrase Randomizer</h2>
 
   <div class="goal-container">
     <div class="goal-header">
-      <span>DAILY UPLOAD</span>
+      <span>Daily Upload</span>
       <span id="goalCount">0 / 3</span>
     </div>
     <div class="progress-bar-bg">
       <div id="progressFill" class="progress-bar-fill"></div>
     </div>
-    <div id="clearedMsg" class="cleared-msg">UPLOAD COMPLETE. SYSTEM READY.</div>
+    <div id="clearedMsg" class="cleared-msg">Upload Complete. System Ready.</div>
   </div>
 
   <!-- Config Panel -->
   <div class="settings-panel">
     <div class="setting-row">
-      <label for="repeatCount">REPEAT COUNT:</label>
+      <label for="repeatCount">Repeat Count:</label>
       <input type="number" id="repeatCount" value="3" min="1" max="10" style="width: 50px;" onchange="saveSettings()">
     </div>
     <div class="setting-row">
-      <label for="speechRate">SPEED (<span id="rateVal">1.0x</span>):</label>
+      <label for="speechRate">Speed (<span id="rateVal">1.0x</span>):</label>
       <input type="range" id="speechRate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel()" onchange="saveSettings()">
     </div>
   </div>
 
   <div class="card">
-    <div id="display" class="phrase">NO DATA FOUND</div>
+    <div id="display" class="phrase">No Data Found</div>
   </div>
 
   <div class="btn-group">
-    <button onclick="nextPhrase(false)">NEXT</button>
-    <button onclick="playCurrentSingle()">PLAY</button>
-    <button onclick="copyPhrase()">COPY</button>
-    <button id="autoBtn" onclick="toggleAutoPlay()">AUTO PLAY</button>
+    <button onclick="nextPhrase(false)">Next</button>
+    <button onclick="playCurrentSingle()">Play</button>
+    <button onclick="copyPhrase()">Copy</button>
+    <button id="autoBtn" onclick="toggleAutoPlay()">Auto Play</button>
   </div>
 
   <div class="input-group">
-    <input type="text" id="inputPhrase" placeholder="ENTER NEW PHRASE...">
-    <button onclick="addPhrase()">ADD</button>
+    <input type="text" id="inputPhrase" placeholder="Enter new phrase...">
+    <button onclick="addPhrase()">Add</button>
   </div>
 
   <div class="management-section">
     <div class="management-header">
-      <span>DATABASE [<span id="totalCount">0</span>]</span>
+      <span>Database [<span id="totalCount">0</span>]</span>
       <div class="data-btns">
-        <button onclick="exportData()">EXPORT</button>
-        <button onclick="document.getElementById('importFile').click()">IMPORT</button>
+        <button onclick="exportData()">Export</button>
+        <button onclick="document.getElementById('importFile').click()">Import</button>
         <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
       </div>
     </div>
@@ -369,7 +370,7 @@
       listContainer.innerHTML = '';
       
       if (phrases.length === 0) {
-        listContainer.innerHTML = '<div style="text-align:center; color:#005a00; padding:20px;">NO DATA</div>';
+        listContainer.innerHTML = '<div style="text-align:center; color:#52b788; padding:20px;">No Data</div>';
         return;
       }
 
@@ -384,7 +385,7 @@
         
         const delBtn = document.createElement('button');
         delBtn.className = 'delete-btn';
-        delBtn.innerText = 'DEL';
+        delBtn.innerText = 'Del';
         delBtn.onclick = () => deletePhrase(index);
         
         item.appendChild(textSpan);
@@ -411,7 +412,6 @@
         uttr.onend = function() {
           count++;
           if (count < repeatCount) {
-            // リピート間のインターバル（1.2秒の間隔）
             setTimeout(playOnce, 1200);
           } else if (onComplete) {
             onComplete();
@@ -439,12 +439,21 @@
 
     function nextPhrase(shouldSpeak = false) {
       if (phrases.length === 0) {
-        document.getElementById('display').innerText = "NO DATA FOUND";
+        document.getElementById('display').innerText = "No Data Found";
         current = "";
         return;
       }
-      const randomIndex = Math.floor(Math.random() * phrases.length);
-      current = phrases[randomIndex];
+      
+      if (phrases.length === 1) {
+        current = phrases[0];
+      } else {
+        let nextIndex;
+        do {
+          nextIndex = Math.floor(Math.random() * phrases.length);
+        } while (phrases[nextIndex] === current);
+        current = phrases[nextIndex];
+      }
+      
       document.getElementById('display').innerText = current;
 
       if (shouldSpeak) {
@@ -473,11 +482,11 @@
         isAutoPlaying = false;
         clearTimeout(autoTimer);
         speechSynthesis.cancel();
-        btn.innerText = "AUTO PLAY";
+        btn.innerText = "Auto Play";
         btn.classList.remove('active');
       } else {
         isAutoPlaying = true;
-        btn.innerText = "STOP";
+        btn.innerText = "Stop";
         btn.classList.add('active');
         if (!current) nextPhrase(false);
         speakAndNext();
@@ -489,7 +498,7 @@
       navigator.clipboard.writeText(current);
       const display = document.getElementById('display');
       const originalText = display.innerText;
-      display.innerText = "DATA COPIED";
+      display.innerText = "Data Copied";
       setTimeout(() => { display.innerText = originalText; }, 1000);
     }
 
@@ -506,12 +515,12 @@
     }
 
     function deletePhrase(index) {
-      if (confirm("DELETE DATA?")) {
+      if (confirm("Delete Data?")) {
         phrases.splice(index, 1);
         save();
         if (phrases.length === 0) {
           current = "";
-          document.getElementById('display').innerText = "NO DATA FOUND";
+          document.getElementById('display').innerText = "No Data Found";
         } else if (current === phrases[index]) {
           nextPhrase(false);
         }
@@ -520,7 +529,7 @@
 
     function exportData() {
       if (phrases.length === 0) {
-        alert("NO DATA TO EXPORT");
+        alert("No Data To Export");
         return;
       }
       const dataStr = JSON.stringify(phrases, null, 2);
@@ -546,13 +555,13 @@
           if (Array.isArray(importedPhrases)) {
             phrases = [...new Set([...phrases, ...importedPhrases])];
             save();
-            alert("IMPORT SUCCESSFUL");
+            alert("Import Successful");
             if (!current) nextPhrase(false);
           } else {
-            alert("INVALID FORMAT");
+            alert("Invalid Format");
           }
         } catch (err) {
-          alert("ERROR PARSING FILE");
+          alert("Error Parsing File");
         }
         document.getElementById('importFile').value = '';
       };
