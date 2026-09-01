@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phrase Randomizer - Matrix Edition</title>
+  <style>
+    /* Matrix Theme Styles */
+    :root {
+      --bg-color: #000000;
+      --text-color: #00ff41;
+      --accent-color: #008f11;
+      --border-color: #008f11;
+      --card-bg: rgba(0, 20, 0, 0.8);
+      --btn-bg: #003b00;
+      --btn-hover: #005a00;
+      --font-mono: 'Courier New', Courier, monospace;
+    }
+
+    body { 
+      font-family: var(--font-mono); 
+      max-width: 600px; 
+      margin: 40px auto; 
+      padding: 20px; 
+      text-align: center; 
+      background: var(--bg-color); 
+      color: var(--text-color); 
+      position: relative;
+    }
+
+    /* Scanline effect */
+    body::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 2;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
+
+    h2 {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 5px var(--text-color);
+    }
+
+    /* Goal Meter */
+    .goal-container { 
+      background: var(--card-bg); 
+      padding: 15px; 
+      border: 1px solid var(--border-color);
+      margin-bottom: 20px; 
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+    }
+    .goal-header { 
+      display: flex; 
+      justify-content: space-between; 
+      font-size: 0.9rem; 
+      font-weight: bold; 
+      margin-bottom: 8px; 
+    }
+    .progress-bar-bg { 
+      background: #001a00; 
+      height: 10px; 
+      border: 1px solid var(--border-color);
+      overflow: hidden; 
+    }
+    .progress-bar-fill { 
+      background: var(--text-color); 
+      height: 100%; 
+      width: 0%; 
+      transition: width 0.3s ease;
+      box-shadow: 0 0 10px var(--text-color);
+    }
+    .cleared-msg { 
+      font-size: 0.8rem; 
+      color: #fff; 
+      font-weight: bold; 
+      margin-top: 6px; 
+      display: none;
+      text-shadow: 0 0 5px #fff;
+    }
+
+    /* Display Card */
+    .card { 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      padding: 30px; 
+      margin-bottom: 20px; 
+      min-height: 120px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      position: relative;
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+    }
+    .phrase { 
+      font-size: 1.5rem; 
+      font-weight: bold; 
+      word-break: break-word; 
+      text-shadow: 0 0 8px var(--text-color);
+    }
+
+    /* Buttons */
+    .btn-group { 
+      display: flex; 
+      gap: 10px; 
+      justify-content: center; 
+      flex-wrap: wrap; 
+      margin-bottom: 20px; 
+    }
+    button { 
+      padding: 10px 16px; 
+      border: 1px solid var(--border-color);
+      background: var(--btn-bg); 
+      color: var(--text-color); 
+      font-family: var(--font-mono);
+      font-size: 0.9rem; 
+      text-transform: uppercase;
+      cursor: pointer; 
+      transition: all 0.2s;
+    }
+    button:hover { 
+      background: var(--btn-hover);
+      box-shadow: 0 0 8px var(--text-color);
+    }
+    button.active { 
+      background: #ff003c; 
+      color: #fff;
+      border-color: #ff003c;
+      box-shadow: 0 0 8px #ff003c;
+    }
+
+    /* Inputs */
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] { 
+      flex-grow: 1;
+      padding: 10px; 
+      background: #000;
+      color: var(--text-color);
+      border: 1px solid var(--border-color); 
+      font-family: var(--font-mono);
+      font-size: 1rem; 
+    }
+    input[type="text"]:focus {
+      outline: none;
+      box-shadow: 0 0 8px var(--text-color);
+    }
+    
+    /* List & Data Management */
+    .management-section {
+      margin-top: 40px;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 20px;
+      text-align: left;
+    }
+    .management-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .data-btns {
+      display: flex;
+      gap: 5px;
+    }
+    .data-btns button {
+      padding: 5px 10px;
+      font-size: 0.8rem;
+    }
+    .phrase-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #003b00;
+      padding: 10px;
+      background: rgba(0,20,0,0.5);
+    }
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #002200;
+      font-size: 0.9rem;
+    }
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    .delete-btn {
+      background: transparent;
+      border: 1px solid #ff003c;
+      color: #ff003c;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+    }
+    .delete-btn:hover {
+      background: #4a0011;
+      box-shadow: 0 0 5px #ff003c;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #001a00; }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); }
+  </style>
+</head>
+<body>
+
+  <h2>SYSTEM.PHRASE_RANDOMIZER</h2>
+
+  <div class="goal-container">
+    <div class="goal-header">
+      <span>DAILY UPLOAD</span>
+      <span id="goalCount">0 / 3</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div id="progressFill" class="progress-bar-fill"></div>
+    </div>
+    <div id="clearedMsg" class="cleared-msg">UPLOAD COMPLETE. SYSTEM READY.</div>
+  </div>
+
+  <div class="card">
+    <div id="display" class="phrase">NO DATA FOUND</div>
+  </div>
+
+  <div class="btn-group">
+    <button onclick="nextPhrase(false)">NEXT</button>
+    <button onclick="copyPhrase()">COPY</button>
+    <button id="autoBtn" onclick="toggleAutoPlay()">AUTO PLAY</button>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="inputPhrase" placeholder="ENTER NEW PHRASE...">
+    <button onclick="addPhrase()">ADD</button>
+  </div>
+
+  <div class="management-section">
+    <div class="management-header">
+      <span>DATABASE [<span id="totalCount">0</span>]</span>
+      <div class="data-btns">
+        <button onclick="exportData()">EXPORT</button>
+        <button onclick="document.getElementById('importFile').click()">IMPORT</button>
+        <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+      </div>
+    </div>
+    <div id="phraseList" class="phrase-list">
+      <!-- List generated by JS -->
+    </div>
+  </div>
+
+  <script>
+    let phrases = JSON.parse(localStorage.getItem('my_phrases')) || [];
+    let current = "";
+    let autoTimer = null;
+    let isAutoPlaying = false;
+    const DAILY_GOAL = 3;
+
+    function save() {
+      localStorage.setItem('my_phrases', JSON.stringify(phrases));
+      updateListUI();
+    }
+
+    function getTodayKey() {
+      const today = new Date();
+      return `added_${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
+    }
+
+    function updateGoalMeter(increment = 0) {
+      const todayKey = getTodayKey();
+      let count = parseInt(localStorage.getItem(todayKey) || '0', 10);
+      
+      if (increment > 0) {
+        count += increment;
+        localStorage.setItem(todayKey, count);
+      }
+
+      const percent = Math.min((count / DAILY_GOAL) * 100, 100);
+      document.getElementById('goalCount').innerText = `${count} / ${DAILY_GOAL}`;
+      document.getElementById('progressFill').style.width = `${percent}%`;
+
+      if (count >= DAILY_GOAL) {
+        document.getElementById('clearedMsg').style.display = 'block';
+      }
+    }
+
+    function updateListUI() {
+      document.getElementById('totalCount').innerText = phrases.length;
+      const listContainer = document.getElementById('phraseList');
+      listContainer.innerHTML = '';
+      
+      if (phrases.length === 0) {
+        listContainer.innerHTML = '<div style="text-align:center; color:#005a00; padding:20px;">NO DATA</div>';
+        return;
+      }
+
+      phrases.forEach((phrase, index) => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        
+        const textSpan = document.createElement('span');
+        textSpan.innerText = phrase;
+        textSpan.style.marginRight = '10px';
+        textSpan.style.wordBreak = 'break-all';
+        
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.innerText = 'DEL';
+        delBtn.onclick = () => deletePhrase(index);
+        
+        item.appendChild(textSpan);
+        item.appendChild(delBtn);
+        listContainer.appendChild(item);
+      });
+    }
+
+    function nextPhrase(shouldSpeak = false) {
+      if (phrases.length === 0) {
+        document.getElementById('display').innerText = "NO DATA FOUND";
+        current = "";
+        return;
+      }
+      const randomIndex = Math.floor(Math.random() * phrases.length);
+      current = phrases[randomIndex];
+      document.getElementById('display').innerText = current;
+
+      if (shouldSpeak) {
+        speakAndNext();
+      }
+    }
+
+    function speakAndNext() {
+      if (!current || !isAutoPlaying) return;
+
+      speechSynthesis.cancel();
+      const uttr = new SpeechSynthesisUtterance(current);
+      uttr.lang = 'en-US';
+      uttr.rate = 0.9;
+
+      uttr.onend = function() {
+        if (!isAutoPlaying) return;
+        autoTimer = setTimeout(() => {
+          nextPhrase(false);
+          speakAndNext();
+        }, 2000);
+      };
+
+      speechSynthesis.speak(uttr);
+    }
+
+    function toggleAutoPlay() {
+      const btn = document.getElementById('autoBtn');
+      if (isAutoPlaying) {
+        isAutoPlaying = false;
+        clearTimeout(autoTimer);
+        speechSynthesis.cancel();
+        btn.innerText = "AUTO PLAY";
+        btn.classList.remove('active');
+      } else {
+        isAutoPlaying = true;
+        btn.innerText = "STOP";
+        btn.classList.add('active');
+        if (!current) nextPhrase(false);
+        speakAndNext();
+      }
+    }
+
+    function copyPhrase() {
+      if (!current) return;
+      navigator.clipboard.writeText(current);
+      const display = document.getElementById('display');
+      const originalText = display.innerText;
+      display.innerText = "DATA COPIED";
+      setTimeout(() => { display.innerText = originalText; }, 1000);
+    }
+
+    function addPhrase() {
+      const input = document.getElementById('inputPhrase');
+      const text = input.value.trim();
+      if (text) {
+        phrases.push(text);
+        save();
+        updateGoalMeter(1);
+        input.value = '';
+        if (!current) nextPhrase(false);
+      }
+    }
+
+    function deletePhrase(index) {
+      if (confirm("DELETE DATA?")) {
+        phrases.splice(index, 1);
+        save();
+        if (phrases.length === 0) {
+          current = "";
+          document.getElementById('display').innerText = "NO DATA FOUND";
+        } else if (current === phrases[index]) {
+          nextPhrase(false);
+        }
+      }
+    }
+
+    function exportData() {
+      if (phrases.length === 0) {
+        alert("NO DATA TO EXPORT");
+        return;
+      }
+      const dataStr = JSON.stringify(phrases, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "phrases_backup.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedPhrases = JSON.parse(e.target.result);
+          if (Array.isArray(importedPhrases)) {
+            phrases = [...new Set([...phrases, ...importedPhrases])];
+            save();
+            alert("IMPORT SUCCESSFUL");
+            if (!current) nextPhrase(false);
+          } else {
+            alert("INVALID FORMAT");
+          }
+        } catch (err) {
+          alert("ERROR PARSING FILE");
+        }
+        document.getElementById('importFile').value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    updateGoalMeter(0);
+    updateListUI();
+    nextPhrase(false);
+
+    document.getElementById("inputPhrase").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addPhrase();
+      }
+    });
+  </script>
+</body>
+</html>
